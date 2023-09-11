@@ -1,21 +1,19 @@
 # Zillow:
 <hr style="border:2px solid black">
 
-## <u>Project Description</u>
-words words words
+
 
 ## Goals: 
-* goals 
-* goals 
-* goals
+* Predict Property Tax assessed values ('taxcaluedollarcnt') of **Single Family Properties** that had a transaction during 2017. 
+* Improve the performance of existing model
+
 
 
 <hr style="border:2px solid black">
 
 # Initial Thoughts
  
-* Is there a price threshold where customer churn rate significantly increases?
-* Can we identify actionable features that significantly increase churn rate?
+* Features related to size of the house 'sqft', 'beds', 'baths' are going to be predictive of tax value. They are going to be closely related so we may want to remove some to avoid multicolinearity.
  
 <hr style="border:2px solid black"> 
 
@@ -23,21 +21,18 @@ words words words
 # Data Dictionary
 | Feature               | Definition |
 |:----------------------|:-----------|
-| blah| (int64) ID of the payment type. |
-| iblah | (int64) ID of the internet service type. |
-| blah| description|
-| blah| description|
-| blah| description|
-| blah| description|
-| blah| description a partner or not. |
-| blah| description dependents or not. |
-| blah| descriptionomer has been with the service. |
+| beds| (float64) Number of bedrooms |
+| baths | (float64) Number of bathrooms |
+| sqft| (float64) finished square feet|
+| yearbuilt| (int64) The year the house was built|
+| poolcnt| (float64) If the property has a pool or not|
+
 
 
 ## Summary
 
-- There are 7043 rows (customers)
-- The target variable is `churn`, indicating whether a customer churned or not.
+- There are 56079 rows (homes)
+- The target variable is `tax_value`, the assessed tax value of the home in dollars.
 <hr style="border:2px solid black"> 
 
 
@@ -47,22 +42,24 @@ Plan --> Acquire --> Prepare --> Explore --> Model --> Deliver
  
 
 #### Acquire
-    * Use custom acquire module to create mySQL connection and read Telco_churn into pd.DataFrame
+    * Use custom acquire module to create mySQL connection and read zillow dataset into pd.DataFrame
 #### Prepare
     * Removed columns with duplicate information
-    * Checked for nulls in the data (internet_service_type) and imputed for "No Internet Service"
-    * Changed dtype for 'total_charges' to float
-    * Reorganized 'payment_type' into values='Auto' and 'Manual'
-    * Encoded categorical variables
-    * Split data into train, validate and test (approx. 60/20/20), stratifying on 'churn'
+    * Renamed Columns
+    * Handled nulls
+    * Changed dtypes
+    * Split data into train, validate and test (approx. 60/20/20)
 #### Explore
-    * Vizualize data distributions to identify potential drivers of churn
-    * Perform stats testing on potential drivers of churn
+    * Vizualize data distributions of feature interaction with target
+    * Perform stats testing on potential features
     * Choose features for the model
 #### Model
-    * Decistion Tree Classifier - Iterate multiple models to tune hyperparameters
-    * KNN - Iterate multiple models to tune hyperparameters
-    * Logistic Regression
+    * OLS - Multiple Regression
+        * Features: 'beds','baths','sqft', 'poolcnt', 'yearbuilt'
+    * LassoLars
+        * alpha=4
+    * 2nd Degree Polynomial
+    * GLM - Tweedie Regressor
 
 <hr style="border:2px solid black"> 
 
@@ -72,12 +69,10 @@ Plan --> Acquire --> Prepare --> Explore --> Model --> Deliver
 >3) Run notebook.
 <hr style="border:2px solid black"> 
  
-### <u>Recommendations:</u>
-
->* Include tech support for all Fiber optic customers.
->* Incentivise customers to enroll in automatic payments. (i.e. rebate for enrollment)
->* Incentivise Month-to-Month customers to sign one or two year contracts.
 
 ### <u>Next Steps:</u>
->* Prescriptive Model: Identify the features that would be easiest for the business to take action. Then create a model using those features to find where executives can focus to lower churn rate.
->* Predictive Model: further EDA to find significant relationships for all potential features. Then create a model using all of the significant features.
+>* Zillow dataset includes many possible features. Do further feature engineering to better capture subsets of the data:
+>    * Distressed properties: tax_delinquency, having more than 2x bedrooms to bathrooms...
+>    * High-end properties: Can lot size help predict high-end properties when our features cannot?
+>* Spend more time investigating outliers. Eliminating the top 0.5% and bottom 0.5% had the biggest positive impact on the model. Are there erros in the data or are our features missing part of the story? 
+>    * Low-end outliers: Are these actually SFR homes? Are there actually structures or just empty lots?
